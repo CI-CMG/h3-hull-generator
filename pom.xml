@@ -76,6 +76,20 @@
     </plugins>
   </reporting>
 
+  <repositories>
+    <repository>
+      <id>ossrh</id>
+      <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
   <dependencies>
 
     <dependency>
@@ -106,6 +120,12 @@
       <groupId>com.uber</groupId>
       <artifactId>h3</artifactId>
       <version>${h3.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>io.github.ci-cmg</groupId>
+      <artifactId>h3-darwin-arm64</artifactId>
+      <version>3.7.0</version>
     </dependency>
 
     <dependency>

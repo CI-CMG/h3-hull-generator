@@ -65,7 +65,7 @@ public class SimplifyingGeometryProcessor extends BaseGeometryProcessor{
      );
      mergedGeometryOutlineDistanceTolerance += deltaDistanceTolerance;
    }
-   return super.processAnteMeridian(mergedGeometryOutlines);
+   return super.processPolar(mergedGeometryOutlines);
   }
 
   private List<Long> getPointsWithMissingNeighbors(Collection<Long> points) {

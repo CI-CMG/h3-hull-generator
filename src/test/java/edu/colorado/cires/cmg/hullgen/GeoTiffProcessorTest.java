@@ -59,7 +59,7 @@ public class GeoTiffProcessorTest {
     final int pointBufferSize = 100;
 
     SimplifyingGeometryProcessor geometryProcessor = new SimplifyingGeometryProcessor(
-        H3_RESOLUTION, geometryFactory, distanceTolerance, deltaDistanceTolerance, maxHullPointsAllowed
+        H3_RESOLUTION, geometryFactory, 0.01, deltaDistanceTolerance, maxHullPointsAllowed
     );
     BufferedHull hull = new BufferedHull(geometryProcessor, pointBufferSize);
     GeoTiffProcessor geoTiffProcessor= new GeoTiffProcessor(pixelArea, hull);

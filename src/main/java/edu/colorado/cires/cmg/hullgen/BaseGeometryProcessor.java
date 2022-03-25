@@ -2,6 +2,7 @@ package edu.colorado.cires.cmg.hullgen;
 ;
 import com.uber.h3core.H3Core;
 import com.uber.h3core.util.GeoCoord;
+import edu.colorado.cires.cmg.polarprocessor.PolarProcessor;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
@@ -75,16 +76,41 @@ public class BaseGeometryProcessor implements GeometryProcessor{
     if (existingGeometry != null) {
       geometries.add(existingGeometry);
     }
-    Geometry geometry = removeHoles(UnaryUnionOp.union(geometries, geometryFactory));
-    return processAnteMeridian(geometry);
+    Geometry geometry = processPolar(UnaryUnionOp.union(geometries, geometryFactory));
+    return removeHoles(geometry);
   }
 
-  @Override
-  public Geometry processAnteMeridian(Geometry geometry) {
-    return new JtsGeometry(geometry, JtsSpatialContext.GEO, true, false).getGeom();
+  protected Geometry processPolar(Geometry geometry) {
+
+    if (geometry.getNumGeometries() == 0) {
+      throw new IllegalStateException("Geometry is empty");
+    }
+
+    if (geometry.getGeometryType().equals("Polygon")) {
+      return PolarProcessor.splitPolar((Polygon) geometry, geometryFactory).orElse(
+          new JtsGeometry(geometry, JtsSpatialContext.GEO, true, false).getGeom()
+      );
+    } else if (geometry.getGeometryType().equals("MultiPolygon")) {
+      Polygon[] polarPolygons = new Polygon[geometry.getNumGeometries()];
+      for (int i = 0; i < geometry.getNumGeometries(); i++) {
+        Polygon polygon = (Polygon) geometry.getGeometryN(i);
+        polygon = (Polygon) PolarProcessor.splitPolar(polygon, geometryFactory).orElse(
+            new JtsGeometry(polygon, JtsSpatialContext.GEO, true, false).getGeom()
+        );
+        polarPolygons[i] = polygon;
+      }
+      return geometryFactory.createMultiPolygon(polarPolygons);
+    } else {
+      throw new IllegalArgumentException("Unsupported geometry type: " + geometry.getGeometryType());
+    }
   }
 
   private Geometry removeHoles(Geometry geometry) {
+
+    if (geometry.getNumGeometries() == 0) {
+      throw new IllegalStateException("Geometry is empty");
+    }
+
     if (geometry.getGeometryType().equals("Polygon")) {
       Polygon polygon = (Polygon) geometry;
       return geometryFactory.createPolygon(polygon.getExteriorRing().getCoordinateSequence());

@@ -32,6 +32,4 @@ public interface GeometryProcessor {
    */
   Geometry mergeGeometryOutlines(List<Geometry> geometries, Geometry existingGeometry);
 
-  Geometry processAnteMeridian(Geometry geometry);
-
 }

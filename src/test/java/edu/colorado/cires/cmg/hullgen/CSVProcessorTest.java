@@ -60,7 +60,7 @@ public class CSVProcessorTest {
     final int pointBufferSize = 100;
 
     SimplifyingGeometryProcessor geometryProcessor = new SimplifyingGeometryProcessor(
-        H3_RESOLUTION, geometryFactory, distanceTolerance, deltaDistanceTolerance, maxHullPointsAllowed
+        H3_RESOLUTION, geometryFactory, 0.01, deltaDistanceTolerance, maxHullPointsAllowed
     );
     BufferedHull hull = new BufferedHull(geometryProcessor, pointBufferSize);
     CSVProcessor csvProcessor = new CSVProcessor(delimiters, hull);
@@ -121,7 +121,7 @@ public class CSVProcessorTest {
     final int pointBufferSize = 10000;
 
     SimplifyingGeometryProcessor geometryProcessor = new SimplifyingGeometryProcessor(
-        H3_RESOLUTION, geometryFactory, distanceTolerance, deltaDistanceTolerance, maxHullPointsAllowed
+        H3_RESOLUTION, geometryFactory, 0.01, deltaDistanceTolerance, maxHullPointsAllowed
     );
     BufferedHull hull = new BufferedHull(geometryProcessor, pointBufferSize);
     CSVProcessor csvProcessor = new CSVProcessor(delimiters, hull);

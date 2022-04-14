@@ -31,7 +31,7 @@
     <connection>scm:git:git@github.com:CI-CMG/h3-hull-generator.git</connection>
     <developerConnection>scm:git:git@github.com:CI-CMG/h3-hull-generator.git</developerConnection>
     <url>https://github.com/CI-CMG/h3-hull-generator</url>
-    <tag>HEAD</tag>
+    <tag>2.0</tag>
   </scm>
 
   <distributionManagement>

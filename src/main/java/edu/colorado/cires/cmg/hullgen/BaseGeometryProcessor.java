@@ -1,5 +1,5 @@
 package edu.colorado.cires.cmg.hullgen;
-;
+
 import com.uber.h3core.H3Core;
 import com.uber.h3core.util.GeoCoord;
 import edu.colorado.cires.cmg.polarprocessor.PolarProcessor;

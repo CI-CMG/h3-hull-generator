@@ -4,12 +4,14 @@ import com.uber.h3core.H3Core;
 import com.uber.h3core.util.GeoCoord;
 import edu.colorado.cires.cmg.polarprocessor.PolarProcessor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.union.UnaryUnionOp;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
@@ -18,11 +20,13 @@ import org.locationtech.spatial4j.shape.jts.JtsGeometry;
 /**
  * Base implementation of {@link GeometryProcessor}
  */
-public class BaseGeometryProcessor implements GeometryProcessor{
+public class BaseGeometryProcessor implements GeometryProcessor {
 
   protected final H3Core h3Core;
   private final Integer h3Resolution;
   private final GeometryFactory geometryFactory;
+
+  private final boolean keepHoles;
 
   /**
    * Constructor for {@link BaseGeometryProcessor}
@@ -34,6 +38,21 @@ public class BaseGeometryProcessor implements GeometryProcessor{
     this.h3Resolution = h3Resolution;
     this.geometryFactory = geometryFactory;
     h3Core = H3Core.newInstance();
+    this.keepHoles = false;
+  }
+
+  /**
+   * Constructor for {@link BaseGeometryProcessor}
+   * @param h3Resolution integer from 0 (the lowest resolution) to 15 (the highest resolution) specifying size of H3 hexagons
+   * @param geometryFactory {@link GeometryFactory} for generating and merging JTS geometries
+   * @param keepHoles boolean specifying whether to keep holes in the output geometry
+   * @throws IOException if {@link H3Core} cannot create a new instance
+   */
+  public BaseGeometryProcessor(Integer h3Resolution, GeometryFactory geometryFactory, boolean keepHoles) throws IOException {
+    this.h3Resolution = h3Resolution;
+    this.geometryFactory = geometryFactory;
+    h3Core = H3Core.newInstance();
+    this.keepHoles = keepHoles;
   }
 
   /**
@@ -54,14 +73,28 @@ public class BaseGeometryProcessor implements GeometryProcessor{
   @Override
   public List<Geometry> getGeometryOutlines(Collection<Long> points) {
     return h3Core.h3SetToMultiPolygon(points, true).parallelStream()
-        .map(geoCoordsList -> geoCoordsList.get(0))
-        .map(geoCoords ->
-            geoCoords.stream()
-                .map(geoCoord -> new Coordinate(geoCoord.lat, geoCoord.lng))
-                .collect(Collectors.toList())
-                .toArray(new Coordinate[] {})
-            )
-        .map(geometryFactory::createPolygon)
+        .map(geoCoordsList -> {
+          List<GeoCoord> geoCoords = geoCoordsList.get(0);
+          LinearRing shell = geometryFactory.createLinearRing(
+              geoCoords.stream()
+                  .map(geoCoord -> new Coordinate(geoCoord.lat, geoCoord.lng))
+                  .collect(Collectors.toList())
+                  .toArray(new Coordinate[] {})
+          );
+          if (geoCoordsList.size() == 1 || !keepHoles) {
+            return geometryFactory.createPolygon(shell, null);
+          }
+          List<LinearRing> holes = new ArrayList<>(geoCoordsList.size() - 1);
+          for (int i = 1; i < geoCoordsList.size(); i++) {
+            holes.add(geometryFactory.createLinearRing(
+                geoCoordsList.get(i).stream()
+                    .map(geoCoord -> new Coordinate(geoCoord.lat, geoCoord.lng))
+                    .collect(Collectors.toList())
+                    .toArray(new Coordinate[] {})
+            ));
+          }
+          return geometryFactory.createPolygon(shell, holes.toArray(new LinearRing[] {}));
+        })
         .collect(Collectors.toList());
   }
 
@@ -77,7 +110,7 @@ public class BaseGeometryProcessor implements GeometryProcessor{
       geometries.add(existingGeometry);
     }
     Geometry geometry = processPolar(UnaryUnionOp.union(geometries, geometryFactory));
-    return removeHoles(geometry);
+    return keepHoles ? geometry : removeHoles(geometry);
   }
 
   protected Geometry processPolar(Geometry geometry) {

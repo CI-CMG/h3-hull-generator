@@ -37,6 +37,24 @@ public class SimplifyingGeometryProcessor extends BaseGeometryProcessor{
   }
 
   /**
+   * Constructor for {@link SimplifyingGeometryProcessor}
+   * @param h3Resolution integer from 0 (the lowest resolution) to 15 (the highest resolution) specifying size of H3 hexagons
+   * @param geometryFactory {@link GeometryFactory} for generating and merging JTS geometries
+   * @param distanceTolerance Douglas-Peucker algorithm distance tolerance
+   * @param deltaDistanceTolerance Granularity of change in distance tolerance for successive attempts of Douglas-Peucker algorithm
+   * @param maxGeometryPointsAllowed maximum allowed points allowed in output {@link Geometry}
+   * @param keepHoles boolean specifying whether to keep holes in the output geometry
+   * @throws IOException if {@link H3Core} cannot create a new instance
+   */
+  public SimplifyingGeometryProcessor(Integer h3Resolution, GeometryFactory geometryFactory, double distanceTolerance, double deltaDistanceTolerance,
+      double maxGeometryPointsAllowed, boolean keepHoles) throws IOException {
+    super(h3Resolution, geometryFactory, keepHoles);
+    this.distanceTolerance = distanceTolerance;
+    this.deltaDistanceTolerance = deltaDistanceTolerance;
+    this.maxGeometryPointsAllowed = maxGeometryPointsAllowed;
+  }
+
+  /**
    * Transforms H3 ids into a simplified {@link List<Geometry>} containing outer rings. Applies Douglas-Peucker algorithm to outer rings
    * @param points {@link Collection<Long>} containing H3 ids
    * @return {@link List<Geometry>} containing outer rings of neighboring hexagons

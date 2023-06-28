@@ -18,4 +18,15 @@ public class CompleteGeometryProcessor extends BaseGeometryProcessor{
   public CompleteGeometryProcessor(Integer h3Resolution, GeometryFactory geometryFactory) throws IOException {
     super(h3Resolution, geometryFactory);
   }
+
+  /**
+   * Constructor for {@link CompleteGeometryProcessor}
+   * @param h3Resolution integer from 0 (the lowest resolution) to 15 (the highest resolution) specifying size of H3 hexagons
+   * @param geometryFactory {@link GeometryFactory} for generating and merging JTS geometries
+   * @param keepHoles boolean specifying whether to keep holes in the output geometry
+   * @throws IOException if {@link H3Core} cannot create a new instance
+   */
+  public CompleteGeometryProcessor(Integer h3Resolution, GeometryFactory geometryFactory, boolean keepHoles) throws IOException {
+    super(h3Resolution, geometryFactory, keepHoles);
+  }
 }

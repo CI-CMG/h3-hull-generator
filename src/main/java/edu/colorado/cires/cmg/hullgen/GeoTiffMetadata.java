@@ -12,6 +12,8 @@ public class GeoTiffMetadata {
 
   private final Point2D.Double pixelScale;
   private final Point2D.Double tiePoint;
+
+  private final Point2D.Double tiePointRaster;
   private final Rectangle imageDimensions;
 
   /**
@@ -20,10 +22,11 @@ public class GeoTiffMetadata {
    * @param tiePoint {@link Point2D.Double} containing the image's reference coordinate in latitude and longitude
    * @param imageDimensions {@link Rectangle} specifying height and width of image
    */
-  public GeoTiffMetadata(Double pixelScale, Double tiePoint, Rectangle imageDimensions) {
+  public GeoTiffMetadata(Double pixelScale, Double tiePoint, Rectangle imageDimensions, Double tiePointRaster) {
     this.pixelScale = pixelScale;
     this.tiePoint = tiePoint;
     this.imageDimensions = imageDimensions;
+    this.tiePointRaster = tiePointRaster;
   }
 
   public Double getPixelScale() {
@@ -32,6 +35,10 @@ public class GeoTiffMetadata {
 
   public Double getTiePoint() {
     return tiePoint;
+  }
+
+  public Double getTiePointRaster() {
+    return tiePointRaster;
   }
 
   public Rectangle getImageDimensions() {
@@ -47,7 +54,8 @@ public class GeoTiffMetadata {
     return new GeoTiffMetadata(
         getPixelScale(tiffImageMetadata),
         getTiePoint(tiffImageMetadata),
-        getImageDimensions(tiffImageMetadata)
+        getImageDimensions(tiffImageMetadata),
+        getTiePointRaster(tiffImageMetadata)
     );
   }
 
@@ -80,5 +88,10 @@ public class GeoTiffMetadata {
     int imageWidth = (int) tiffImageMetadata.getTIFFField(GeoTiffTags.IMAGE_WIDTH).getValue();
     int imageHeight = (int) tiffImageMetadata.getTIFFField(GeoTiffTags.IMAGE_HEIGHT).getValue();
     return new Rectangle(0, 0, imageWidth, imageHeight);
+  }
+
+  public static Point2D.Double getTiePointRaster(TIFFImageMetadata tiffImageMetadata) {
+    double[] tiePoint = (double[]) tiffImageMetadata.getTIFFField(GeoTiffTags.TIE_POINT).getValue();
+    return new Point2D.Double(tiePoint[0], tiePoint[1]);
   }
 }

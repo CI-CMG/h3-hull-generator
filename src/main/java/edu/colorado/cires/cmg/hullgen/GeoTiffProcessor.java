@@ -105,9 +105,17 @@ public class GeoTiffProcessor implements InputFileProcessor{
     double relativeLat = metadata.getPixelScale().y * point.y;
     double relativeLon = metadata.getPixelScale().x * point.x;
 
-    Point2D.Double tiePoint = metadata.getTiePoint();
-    relativeLat = relativeLat > tiePoint.getY() ? relativeLat * 1 : relativeLat * -1;
-    relativeLon = relativeLon > tiePoint.getX() ? relativeLon * 1 : relativeLon * -1;
+    Point2D.Double rasterTiePoint = metadata.getTiePoint();
+    relativeLat = point.y > rasterTiePoint.getY() ? relativeLat * -1 : relativeLat * 1;
+    relativeLon = point.x > rasterTiePoint.getX() ? relativeLon * 1 : relativeLon * -1;
+
+    if (rasterTiePoint.getY() == point.y) {
+      relativeLat = 0;
+    }
+    if (rasterTiePoint.getX() == point.x) {
+      relativeLon = 0;
+    }
+
 
     return Optional.of(new GeoCoord(
         metadata.getTiePoint().getY() + relativeLat,

@@ -77,7 +77,7 @@ public class BaseGeometryProcessor implements GeometryProcessor {
           List<GeoCoord> geoCoords = geoCoordsList.get(0);
           LinearRing shell = geometryFactory.createLinearRing(
               geoCoords.stream()
-                  .map(geoCoord -> new Coordinate(geoCoord.lat, geoCoord.lng))
+                  .map(geoCoord -> new Coordinate(geoCoord.lng, geoCoord.lat))
                   .collect(Collectors.toList())
                   .toArray(new Coordinate[] {})
           );
@@ -88,7 +88,7 @@ public class BaseGeometryProcessor implements GeometryProcessor {
           for (int i = 1; i < geoCoordsList.size(); i++) {
             holes.add(geometryFactory.createLinearRing(
                 geoCoordsList.get(i).stream()
-                    .map(geoCoord -> new Coordinate(geoCoord.lat, geoCoord.lng))
+                    .map(geoCoord -> new Coordinate(geoCoord.lng, geoCoord.lat))
                     .collect(Collectors.toList())
                     .toArray(new Coordinate[] {})
             ));

@@ -16,8 +16,19 @@ public class GeoJSONWriter implements OutputFileWriter{
 
   private final CoordinateFilter coordinateFilter;
 
+    /**
+     * Constructor for {@link GeoJSONWriter}
+     * @param coordinateFilter {@link CoordinateFilter} to apply to input {@link Geometry}
+     */
   public GeoJSONWriter(CoordinateFilter coordinateFilter) {
     this.coordinateFilter = coordinateFilter;
+  }
+
+    /**
+     * Constructor for {@link GeoJSONWriter}
+     */
+  public GeoJSONWriter() {
+    this.coordinateFilter = null;
   }
 
   /**

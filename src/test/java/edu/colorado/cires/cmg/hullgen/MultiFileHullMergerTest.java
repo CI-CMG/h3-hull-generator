@@ -124,7 +124,7 @@ public class MultiFileHullMergerTest {
         new CompleteGeometryProcessor(H3_RESOLUTION, new GeometryFactory())
     );
     InputFileProcessor inputFileProcessor = new CSVProcessor("[, ]", hull);
-    OutputFileWriter outputFileWriter = new GeoJSONWriter(new InvertCoordinateFilter());
+    OutputFileWriter outputFileWriter = new GeoJSONWriter();
 
     HullGenerator hullGenerator = new HullGenerator(inputFileProcessor, outputFileWriter);
     Files.walk(SOURCE_DIR).forEach(file ->
@@ -147,7 +147,7 @@ public class MultiFileHullMergerTest {
         new CompleteGeometryProcessor(H3_RESOLUTION, new GeometryFactory())
     );
     InputFileProcessor inputFileProcessor = new GeoTiffProcessor(10000, hull);
-    OutputFileWriter outputFileWriter = new WktWriter(new InvertCoordinateFilter());
+    OutputFileWriter outputFileWriter = new WktWriter();
 
     HullGenerator hullGenerator = new HullGenerator(inputFileProcessor, outputFileWriter);
     Files.walk(SOURCE_DIR).forEach(file ->

@@ -16,8 +16,19 @@ public class WktWriter implements OutputFileWriter{
 
   private final CoordinateFilter coordinateFilter;
 
+  /**
+   * Constructor for {@link WktWriter}
+   * @param coordinateFilter {@link CoordinateFilter} to apply to input {@link Geometry}
+   */
   public WktWriter(CoordinateFilter coordinateFilter) {
     this.coordinateFilter = coordinateFilter;
+  }
+
+  /**
+   * Constructor for {@link WktWriter}
+   */
+  public WktWriter() {
+  this.coordinateFilter = null;
   }
 
   /**

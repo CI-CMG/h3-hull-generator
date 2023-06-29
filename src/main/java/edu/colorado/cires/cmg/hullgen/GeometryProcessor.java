@@ -18,11 +18,11 @@ public interface GeometryProcessor {
   long geoCoordToH3(GeoCoord geoCoord);
 
   /**
-   * Transforms H3 ids into {@link List<Geometry>} containing outer rings
+   * Transforms H3 ids into {@link List<Geometry>}
    * @param points {@link Collection<Long>} containing H3 ids
-   * @return {@link List<Geometry>} containing outer rings of neighboring hexagons
+   * @return {@link List<Geometry>} from H3 ids
    */
-  List<Geometry> getGeometryOutlines(Collection<Long> points);
+  List<Geometry> getGeometry(Collection<Long> points);
 
   /**
    * Unions {@link List<Geometry>} into a single {@link Geometry}

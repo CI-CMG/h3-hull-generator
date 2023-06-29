@@ -37,7 +37,7 @@ public class BaseHull implements Hull{
    */
   @Override
   public void generateHull() {
-    List<Geometry> geometryOutlines = geometryProcessor.getGeometryOutlines(points);
+    List<Geometry> geometryOutlines = geometryProcessor.getGeometry(points);
     points = new HashSet<>();
     hull = geometryProcessor.mergeGeometryOutlines(geometryOutlines, hull);
   }

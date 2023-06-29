@@ -66,12 +66,12 @@ public class BaseGeometryProcessor implements GeometryProcessor {
   }
 
   /**
-   * Transforms H3 ids into {@link List<Geometry>} containing outer rings
+   * Transforms H3 ids into {@link List<Geometry>}
    * @param points {@link Collection<Long>} containing H3 ids
-   * @return {@link List<Geometry>} containing outer rings of neighboring hexagons
+   * @return {@link List<Geometry>} from H3 ids
    */
   @Override
-  public List<Geometry> getGeometryOutlines(Collection<Long> points) {
+  public List<Geometry> getGeometry(Collection<Long> points) {
     return h3Core.h3SetToMultiPolygon(points, true).parallelStream()
         .map(geoCoordsList -> {
           List<GeoCoord> geoCoords = geoCoordsList.get(0);

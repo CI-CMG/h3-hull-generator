@@ -13,11 +13,13 @@ import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 /**
  * Implementation of {@link BaseGeometryProcessor} which simplifies output geometry
  */
-public class SimplifyingGeometryProcessor extends BaseGeometryProcessor{
+public class SimplifyingGeometryProcessor extends BaseGeometryProcessor {
 
   private final double distanceTolerance;
   private final double deltaDistanceTolerance;
   private final double maxGeometryPointsAllowed;
+
+  private final boolean keepHoles;
 
   /**
    *
@@ -34,6 +36,7 @@ public class SimplifyingGeometryProcessor extends BaseGeometryProcessor{
     this.distanceTolerance = distanceTolerance;
     this.deltaDistanceTolerance = deltaDistanceTolerance;
     this.maxGeometryPointsAllowed = maxGeometryPointsAllowed;
+    this.keepHoles = false;
   }
 
   /**
@@ -52,17 +55,18 @@ public class SimplifyingGeometryProcessor extends BaseGeometryProcessor{
     this.distanceTolerance = distanceTolerance;
     this.deltaDistanceTolerance = deltaDistanceTolerance;
     this.maxGeometryPointsAllowed = maxGeometryPointsAllowed;
+    this.keepHoles = keepHoles;
   }
 
   /**
-   * Transforms H3 ids into a simplified {@link List<Geometry>} containing outer rings. Applies Douglas-Peucker algorithm to outer rings
+   * Transforms H3 ids into {@link List<Geometry>}
    * @param points {@link Collection<Long>} containing H3 ids
-   * @return {@link List<Geometry>} containing outer rings of neighboring hexagons
+   * @return {@link List<Geometry>} from H3 ids
    */
   @Override
-  public List<Geometry> getGeometryOutlines(Collection<Long> points) {
-    List<Long> pointsWithMissingNeighbors = getPointsWithMissingNeighbors(points);
-    return super.getGeometryOutlines(pointsWithMissingNeighbors).parallelStream()
+  public List<Geometry> getGeometry(Collection<Long> points) {
+    Collection<Long> geometryPoints = keepHoles ? points : getPointsWithMissingNeighbors(points);
+    return super.getGeometry(geometryPoints).parallelStream()
         .map(geometry -> DouglasPeuckerSimplifier.simplify(geometry, distanceTolerance))
         .collect(Collectors.toList());
   }

@@ -116,10 +116,28 @@ public class GeoTiffProcessor implements InputFileProcessor{
       relativeLon = 0;
     }
 
+    double lat = metadata.getTiePoint().getY() + relativeLat;
+    double lon = metadata.getTiePoint().getX() + relativeLon;
+
+    if (lat < -90) {
+      lat = 90 + (lat + 90);
+    }
+
+    if (lat > 90) {
+      lat = -90 + (lat - 90);
+    }
+
+    if (lon < -180) {
+      lon = 180 + (lon + 180);
+    }
+
+    if (lon > 180) {
+      lon = -180 + (lon - 180);
+    }
 
     return Optional.of(new GeoCoord(
-        metadata.getTiePoint().getY() + relativeLat,
-        metadata.getTiePoint().getX() + relativeLon
+        lat,
+        lon
     ));
   }
 

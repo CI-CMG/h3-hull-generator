@@ -2,7 +2,6 @@ package edu.colorado.cires.cmg.hullgen;
 
 import com.uber.h3core.util.GeoCoord;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.locationtech.jts.geom.Geometry;
 
@@ -37,7 +36,7 @@ public class BaseHull implements Hull{
    */
   @Override
   public void generateHull() {
-    List<Geometry> geometryOutlines = geometryProcessor.getGeometry(points);
+    Geometry geometryOutlines = geometryProcessor.getGeometry(points);
     points = new HashSet<>();
     hull = geometryProcessor.mergeGeometryOutlines(geometryOutlines, hull);
   }

@@ -7,13 +7,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.operation.union.UnaryUnionOp;
 import org.locationtech.spatial4j.context.jts.JtsSpatialContext;
 import org.locationtech.spatial4j.shape.jts.JtsGeometry;
 
@@ -66,51 +67,45 @@ public class BaseGeometryProcessor implements GeometryProcessor {
   }
 
   /**
-   * Transforms H3 ids into {@link List<Geometry>}
+   * Transforms H3 ids into {@link Geometry}
    * @param points {@link Collection<Long>} containing H3 ids
-   * @return {@link List<Geometry>} from H3 ids
+   * @return {@link Geometry} from H3 ids
    */
   @Override
-  public List<Geometry> getGeometry(Collection<Long> points) {
-    return h3Core.h3SetToMultiPolygon(points, true).parallelStream()
+  public Geometry getGeometry(Collection<Long> points) {
+    List<Geometry> geometries = points.stream().map(h3Core::h3ToGeoBoundary).parallel()
         .map(geoCoordsList -> {
-          List<GeoCoord> geoCoords = geoCoordsList.get(0);
-          LinearRing shell = geometryFactory.createLinearRing(
-              geoCoords.stream()
-                  .map(geoCoord -> new Coordinate(geoCoord.lng, geoCoord.lat))
-                  .collect(Collectors.toList())
-                  .toArray(new Coordinate[] {})
-          );
-          if (geoCoordsList.size() == 1 || !keepHoles) {
-            return geometryFactory.createPolygon(shell, null);
-          }
-          List<LinearRing> holes = new ArrayList<>(geoCoordsList.size() - 1);
-          for (int i = 1; i < geoCoordsList.size(); i++) {
-            holes.add(geometryFactory.createLinearRing(
-                geoCoordsList.get(i).stream()
-                    .map(geoCoord -> new Coordinate(geoCoord.lng, geoCoord.lat))
-                    .collect(Collectors.toList())
-                    .toArray(new Coordinate[] {})
-            ));
-          }
-          return geometryFactory.createPolygon(shell, holes.toArray(new LinearRing[] {}));
+          List<Coordinate> coordinates = geoCoordsList.stream().map(geoCoord -> new Coordinate(geoCoord.lng, geoCoord.lat)).collect(Collectors.toList());
+          coordinates.add(coordinates.get(0));
+          LinearRing linearRing = geometryFactory.createLinearRing(coordinates.toArray(new Coordinate[] {}));
+          return processPolar(geometryFactory.createPolygon(linearRing, null));
         })
         .collect(Collectors.toList());
+    List<Polygon> polygons = new ArrayList<>();
+    geometries.stream().filter(Objects::nonNull).forEach(g -> {
+      if (g instanceof Polygon) {
+        polygons.add((Polygon) g);
+      } else if (g instanceof MultiPolygon) {
+        for (int i = 0; i < g.getNumGeometries(); i++) {
+          polygons.add((Polygon) g.getGeometryN(i));
+        }
+      } else {
+        throw new IllegalStateException("Unexpected geometry type: " + g.getGeometryType());
+      }
+    });
+    return geometryFactory.createMultiPolygon(polygons.toArray(new Polygon[] {})).union();
   }
 
   /**
-   * Unions {@link List<Geometry>} into a single {@link Geometry}
-   * @param geometries separated {@link List<Geometry>}
+   * Unions {@link Geometry} and another geometry into a single {@link Geometry}
+   * @param geometry {@link Geometry} to add
    * @param existingGeometry existing {@link Geometry}
    * @return {@link Geometry} containing unions of all input geometry
    */
   @Override
-  public Geometry mergeGeometryOutlines(List<Geometry> geometries, Geometry existingGeometry) {
-    if (existingGeometry != null) {
-      geometries.add(existingGeometry);
-    }
-    Geometry geometry = processPolar(UnaryUnionOp.union(geometries, geometryFactory));
-    return keepHoles ? geometry : removeHoles(geometry);
+  public Geometry mergeGeometryOutlines(Geometry geometry, Geometry existingGeometry) {
+    Geometry merged = existingGeometry != null ? existingGeometry.union(geometry) : geometry;
+    return keepHoles ? merged : removeHoles(merged);
   }
 
   protected Geometry processPolar(Geometry geometry) {
@@ -120,22 +115,43 @@ public class BaseGeometryProcessor implements GeometryProcessor {
     }
 
     if (geometry.getGeometryType().equals("Polygon")) {
-      return PolarProcessor.splitPolar((Polygon) geometry, geometryFactory).orElse(
-          new JtsGeometry(geometry, JtsSpatialContext.GEO, true, false).getGeom()
-      );
-    } else if (geometry.getGeometryType().equals("MultiPolygon")) {
-      Polygon[] polarPolygons = new Polygon[geometry.getNumGeometries()];
-      for (int i = 0; i < geometry.getNumGeometries(); i++) {
-        Polygon polygon = (Polygon) geometry.getGeometryN(i);
-        polygon = (Polygon) PolarProcessor.splitPolar(polygon, geometryFactory).orElse(
+      Polygon polygon = (Polygon) geometry;
+      try {
+        return PolarProcessor.splitPolar(polygon, geometryFactory).orElse(
             new JtsGeometry(polygon, JtsSpatialContext.GEO, true, false).getGeom()
         );
-        polarPolygons[i] = polygon;
+      } catch (AssertionError e) {
+        System.out.println("Skipping unprocessable geometry: " + polygon);
+        return null;
       }
-      return geometryFactory.createMultiPolygon(polarPolygons);
-    } else {
-      throw new IllegalArgumentException("Unsupported geometry type: " + geometry.getGeometryType());
+    } else if (geometry.getGeometryType().equals("MultiPolygon")) {
+      List<Polygon> polarPolygons = new ArrayList<>();
+      for (int i = 0; i < geometry.getNumGeometries(); i++) {
+        Polygon polygon = (Polygon) geometry.getGeometryN(i);
+        Geometry result = null;
+        try {
+          result = PolarProcessor.splitPolar(polygon, geometryFactory).orElse(
+              new JtsGeometry(polygon, JtsSpatialContext.GEO, true, false).getGeom()
+          );
+        } catch (AssertionError e) {
+          System.out.println("Skipping unprocessable geometry: " + polygon);
+        }
+        if (result instanceof Polygon) {
+          polarPolygons.add((Polygon) result);
+        } else if (result instanceof MultiPolygon) {
+          for (int j = 0; j < result.getNumGeometries(); j++) {
+            polarPolygons.add((Polygon) result.getGeometryN(j));
+          }
+        } else {
+          if (result != null) {
+            throw new IllegalStateException("Unexpected geometry type: " + result.getGeometryType());
+          }
+          throw new IllegalStateException("Encountered null geometry");
+        }
+      }
+      return geometryFactory.createMultiPolygon(polarPolygons.toArray(new Polygon[] {}));
     }
+    throw new IllegalArgumentException("Unsupported geometry type: " + geometry.getGeometryType());
   }
 
   private Geometry removeHoles(Geometry geometry) {
@@ -158,4 +174,5 @@ public class BaseGeometryProcessor implements GeometryProcessor {
       throw new IllegalStateException("Invalid merged geometry type: " + geometry.getGeometryType());
     }
   }
+
 }

@@ -59,27 +59,25 @@ public class SimplifyingGeometryProcessor extends BaseGeometryProcessor {
   }
 
   /**
-   * Transforms H3 ids into {@link List<Geometry>}
+   * Transforms H3 ids into {@link Geometry}
    * @param points {@link Collection<Long>} containing H3 ids
-   * @return {@link List<Geometry>} from H3 ids
+   * @return {@link Geometry} from H3 ids
    */
   @Override
-  public List<Geometry> getGeometry(Collection<Long> points) {
+  public Geometry getGeometry(Collection<Long> points) {
     Collection<Long> geometryPoints = keepHoles ? points : getPointsWithMissingNeighbors(points);
-    return super.getGeometry(geometryPoints).parallelStream()
-        .map(geometry -> DouglasPeuckerSimplifier.simplify(geometry, distanceTolerance))
-        .collect(Collectors.toList());
+    return DouglasPeuckerSimplifier.simplify(super.getGeometry(geometryPoints), distanceTolerance);
   }
 
   /**
-   * Unions {@link List<Geometry>} into a single {@link Geometry}. Successively applies Douglas-Peucker algorithm until output geometry is at or below the specified point count
-   * @param geometries {@link List<Geometry>} separated geometries
-   * @param existingGeometry {@link Geometry} existing geometry
+   * Unions {@link Geometry} and an existing {@link Geometry} into a single {@link Geometry}
+   * @param geometry {@link Geometry} to add
+   * @param existingGeometry existing {@link Geometry}
    * @return {@link Geometry} containing unions of all input geometry
    */
   @Override
-  public Geometry mergeGeometryOutlines(List<Geometry> geometries, Geometry existingGeometry) {
-   Geometry mergedGeometryOutlines = super.mergeGeometryOutlines(geometries, existingGeometry);
+  public Geometry mergeGeometryOutlines(Geometry geometry, Geometry existingGeometry) {
+   Geometry mergedGeometryOutlines = super.mergeGeometryOutlines(geometry, existingGeometry);
    double mergedGeometryOutlineDistanceTolerance = distanceTolerance;
    while (mergedGeometryOutlines.getNumPoints() >= maxGeometryPointsAllowed) {
      mergedGeometryOutlines = DouglasPeuckerSimplifier.simplify(

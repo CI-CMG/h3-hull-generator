@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.locationtech.jts.geom.Geometry;
@@ -51,7 +49,7 @@ public class MultiFileHullMerger implements InputFileProcessor{
           hull = geometry;
           continue;
         }
-        hull = geometryProcessor.mergeGeometryOutlines(new ArrayList<>(Collections.singleton(geometry)), hull);
+        hull = geometryProcessor.mergeGeometryOutlines(geometry, hull);
       }
       return hull;
     } catch (ParseException e) {

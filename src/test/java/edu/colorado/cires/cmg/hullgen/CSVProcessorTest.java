@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.locationtech.jts.geom.PrecisionModel;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,8 +19,8 @@ public class CSVProcessorTest {
   final Path TEST_DIR = Paths.get("src/test/resources");
   final String delimiters = "[, ]";
   final int H3_RESOLUTION = 8;
-  final GeometryFactory geometryFactory = new GeometryFactory();
-  final double distanceTolerance = 0.07;
+  final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
+  final double distanceTolerance = 0.007;
   final double deltaDistanceTolerance = 0.001;
   final int maxHullPointsAllowed = 10000;
 

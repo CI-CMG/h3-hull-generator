@@ -19,7 +19,7 @@ public class GeoTiffProcessorTest {
   final int H3_RESOLUTION = 8;
   final int pixelArea = 10000;
   final GeometryFactory geometryFactory = new GeometryFactory();
-  final double distanceTolerance = 0.07;
+  final double distanceTolerance = 0.007;
   final double deltaDistanceTolerance = 0.001;
   final int maxHullPointsAllowed = 10000;
 

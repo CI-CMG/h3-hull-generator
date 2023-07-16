@@ -2,7 +2,6 @@ package edu.colorado.cires.cmg.hullgen;
 
 import com.uber.h3core.util.GeoCoord;
 import java.util.Collection;
-import java.util.List;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -18,18 +17,18 @@ public interface GeometryProcessor {
   long geoCoordToH3(GeoCoord geoCoord);
 
   /**
-   * Transforms H3 ids into {@link List<Geometry>}
+   * Transforms H3 ids into {@link Geometry}
    * @param points {@link Collection<Long>} containing H3 ids
-   * @return {@link List<Geometry>} from H3 ids
+   * @return {@link Geometry} from H3 ids
    */
-  List<Geometry> getGeometry(Collection<Long> points);
+  Geometry getGeometry(Collection<Long> points);
 
   /**
-   * Unions {@link List<Geometry>} into a single {@link Geometry}
-   * @param geometries separated {@link List<Geometry>}
+   * Unions {@link Geometry} and another geometry into a single {@link Geometry}
+   * @param geometry {@link Geometry} to add
    * @param existingGeometry existing {@link Geometry}
    * @return {@link Geometry} containing unions of all input geometry
    */
-  Geometry mergeGeometryOutlines(List<Geometry> geometries, Geometry existingGeometry);
+  Geometry mergeGeometryOutlines(Geometry geometry, Geometry existingGeometry);
 
 }

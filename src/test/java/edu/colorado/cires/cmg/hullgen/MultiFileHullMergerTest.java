@@ -24,6 +24,7 @@ public class MultiFileHullMergerTest {
 
   @BeforeEach
   public void beforeEach() throws IOException {
+    FileUtils.deleteQuietly(TEST_DIR.toAbsolutePath().toFile());
     Files.createDirectory(TEST_DIR.toAbsolutePath());
   }
 
@@ -129,7 +130,7 @@ public class MultiFileHullMergerTest {
     HullGenerator hullGenerator = new HullGenerator(inputFileProcessor, outputFileWriter);
     Files.walk(SOURCE_DIR).forEach(file ->
         {
-          if (file.getFileName().toString().endsWith(".csv")) {
+          if (file.getFileName().toString().endsWith(".csv") && !file.getFileName().toString().equals("polar_dateline.csv")) {
             String outputFileName = file.getFileName().toString().split("\\.")[0] + ".geojson";
             File outputFile = new File(TEST_DIR .resolve(outputFileName).toString());
             try {

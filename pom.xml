@@ -4,7 +4,7 @@
 
   <groupId>io.github.ci-cmg</groupId>
   <artifactId>h3-hull-generator</artifactId>
-  <version>3.0.0</version>
+  <version>3.0.1-SNAPSHOT</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>
@@ -31,7 +31,7 @@
     <connection>scm:git:git@github.com:CI-CMG/h3-hull-generator.git</connection>
     <developerConnection>scm:git:git@github.com:CI-CMG/h3-hull-generator.git</developerConnection>
     <url>https://github.com/CI-CMG/h3-hull-generator</url>
-    <tag>v3.0.0</tag>
+    <tag>3.0</tag>
   </scm>
 
   <distributionManagement>
